@@ -1,0 +1,14 @@
+# Python
+backend/venv/
+backend/__pycache__/
+*.py[cod]
+.env
+
+# Angular / Node
+frontend/node_modules/
+frontend/dist/
+.angular/
+
+# IA / DB
+backend/chroma_db/  # No subiremos la DB local, se genera al ejecutar
+.DS_Store
