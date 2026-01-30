@@ -10,5 +10,5 @@ frontend/dist/
 .angular/
 
 # IA / DB
-backend/chroma_db/  # No subiremos la DB local, se genera al ejecutar
+backend/chroma_db/
 .DS_Store
