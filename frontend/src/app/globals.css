@@ -1,26 +1,80 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  body {
+    @apply bg-[#030712] text-slate-200 antialiased overflow-x-hidden;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  /* --- SISTEMA DE FONDO --- */
+  .mesh-gradient {
+    @apply fixed inset-0 -z-10 overflow-hidden;
+    background-color: #030712;
+  }
+
+  .mesh-gradient::before, .mesh-gradient::after {
+    content: "";
+    @apply absolute w-[500px] h-[500px] rounded-full blur-[120px] opacity-20;
+    animation: float 20s infinite alternate ease-in-out;
+  }
+
+  .mesh-gradient::before {
+    background: radial-gradient(circle, #2563eb, transparent);
+    top: -10%;
+    left: 10%;
+  }
+
+  .mesh-gradient::after {
+    background: radial-gradient(circle, #10b981, transparent);
+    bottom: -10%;
+    right: 10%;
+    animation-delay: -10s;
+  }
+
+  @keyframes float {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(100px, 50px) scale(1.1); }
+    100% { transform: translate(-50px, 100px) scale(0.9); }
+  }
+
+  /* --- COMPONENTES DE NAVEGACIÓN --- */
+  .nav-wrapper {
+    @apply fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-4xl;
+  }
+
+  .nav-container {
+    @apply flex justify-between items-center px-4 sm:px-6 py-3 
+           backdrop-blur-md bg-slate-900/60 border border-white/10 
+           rounded-2xl shadow-2xl;
+  }
+
+  .nav-logo-box {
+    @apply w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center 
+           font-bold text-white transition-colors hover:bg-blue-500;
+  }
+
+  .nav-link {
+    @apply relative px-3 py-2 rounded-xl flex items-center gap-2 text-sm 
+           transition-colors text-slate-400 hover:text-slate-100;
+  }
+
+  .nav-link-active {
+    @apply text-white bg-white/5 border border-white/10;
+  }
+
+  /* --- UTILIDADES DE DISEÑO --- */
+  .text-gradient-ai {
+    @apply bg-gradient-to-r from-blue-400 via-indigo-400 to-emerald-400 bg-clip-text text-transparent;
+  }
+
+  .glass-card {
+    @apply bg-slate-900/40 border border-white/10 rounded-3xl backdrop-blur-xl shadow-2xl;
+  }
+
+  /* Ajuste para el enlace del navbar para permitir el posicionamiento del indicador */
+  .nav-link {
+    @apply relative px-3 py-2 rounded-xl flex items-center gap-2 text-sm 
+           transition-colors text-slate-400 hover:text-slate-100 z-10;
+  }
 }
