@@ -1,80 +1,160 @@
 @import "tailwindcss";
 
+/* Configuración de Variables y Animaciones */
+@theme {
+  --breakpoint-xs: 480px;
+  
+  @keyframes float {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(5%, 10%) scale(1.1); }
+    100% { transform: translate(-5%, 5%) scale(0.9); }
+  }
+}
+
+@utility glass-card {
+  background-color: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  border-radius: 1.5rem;
+}
+
+@utility text-gradient-ai {
+  background-image: linear-gradient(to right, #60a5fa, #818cf8, #34d399);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 @layer base {
   body {
-    @apply bg-[#030712] text-slate-200 antialiased overflow-x-hidden;
+    @apply bg-[#030712] text-slate-200 antialiased min-h-screen;
   }
 }
 
 @layer components {
-  /* --- SISTEMA DE FONDO --- */
+  /* Fondo Animado */
   .mesh-gradient {
-    @apply fixed inset-0 -z-10 overflow-hidden;
-    background-color: #030712;
+    position: fixed;
+    inset: 0;
+    z-index: -10;
+    overflow: hidden;
+    background: #030712;
   }
 
   .mesh-gradient::before, .mesh-gradient::after {
     content: "";
-    @apply absolute w-[500px] h-[500px] rounded-full blur-[120px] opacity-20;
+    position: absolute;
+    width: 60vw;
+    height: 60vw;
+    border-radius: 9999px;
+    filter: blur(100px);
+    opacity: 0.15;
     animation: float 20s infinite alternate ease-in-out;
   }
 
   .mesh-gradient::before {
     background: radial-gradient(circle, #2563eb, transparent);
     top: -10%;
-    left: 10%;
+    left: -10%;
   }
 
   .mesh-gradient::after {
     background: radial-gradient(circle, #10b981, transparent);
     bottom: -10%;
-    right: 10%;
+    right: -10%;
     animation-delay: -10s;
   }
 
-  @keyframes float {
-    0% { transform: translate(0, 0) scale(1); }
-    50% { transform: translate(100px, 50px) scale(1.1); }
-    100% { transform: translate(-50px, 100px) scale(0.9); }
-  }
-
-  /* --- COMPONENTES DE NAVEGACIÓN --- */
+  /* Anatomía del Navbar */
   .nav-wrapper {
     @apply fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-4xl;
   }
 
   .nav-container {
-    @apply flex justify-between items-center px-4 sm:px-6 py-3 
-           backdrop-blur-md bg-slate-900/60 border border-white/10 
-           rounded-2xl shadow-2xl;
-  }
-
-  .nav-logo-box {
-    @apply w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center 
-           font-bold text-white transition-colors hover:bg-blue-500;
+    @apply glass-card flex justify-between items-center px-6 py-3 shadow-2xl;
   }
 
   .nav-link {
-    @apply relative px-3 py-2 rounded-xl flex items-center gap-2 text-sm 
-           transition-colors text-slate-400 hover:text-slate-100;
+    @apply relative px-4 py-2 rounded-xl flex items-center gap-2 text-sm 
+           transition-all text-slate-400 hover:text-white z-10;
   }
 
   .nav-link-active {
-    @apply text-white bg-white/5 border border-white/10;
+    @apply text-white;
   }
 
-  /* --- UTILIDADES DE DISEÑO --- */
-  .text-gradient-ai {
-    @apply bg-gradient-to-r from-blue-400 via-indigo-400 to-emerald-400 bg-clip-text text-transparent;
+  .bento-grid {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 1.5rem;
+    auto-rows: minmax(180px, auto);
   }
 
-  .glass-card {
-    @apply bg-slate-900/40 border border-white/10 rounded-3xl backdrop-blur-xl shadow-2xl;
+  @media (min-width: 768px) {
+    .bento-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
   }
 
-  /* Ajuste para el enlace del navbar para permitir el posicionamiento del indicador */
-  .nav-link {
-    @apply relative px-3 py-2 rounded-xl flex items-center gap-2 text-sm 
-           transition-colors text-slate-400 hover:text-slate-100 z-10;
+  .bento-item {
+    @apply glass-card p-6 flex flex-col justify-between transition-all duration-300;
+    position: relative;
+    overflow: hidden;
   }
+
+  .bento-item:hover {
+    border-color: rgba(59, 130, 246, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px -15px rgba(37, 99, 235, 0.2);
+  }
+
+  .tech-tag {
+    @apply px-2 py-1 rounded-md bg-blue-500/10 border border-blue-500/20 
+           text-[10px] font-mono text-blue-400 uppercase tracking-tighter;
+  }
+
+  /* Área de entrada de texto optimizada para edición larga */
+  .ai-textarea {
+    @apply w-full h-full min-h-[300px] bg-transparent border-none outline-none 
+           text-slate-300 placeholder-slate-600 font-sans leading-relaxed resize-none;
+  }
+
+  /* Contenedor de resultados con énfasis en el diagnóstico */
+  .results-panel {
+    @apply flex flex-col gap-6 p-2 h-full;
+  }
+
+  /* Barra de progreso de Match (el "termómetro" de compatibilidad) */
+  .match-gauge {
+    @apply h-3 w-full bg-slate-800 rounded-full overflow-hidden relative border border-white/5;
+  }
+
+  .match-gauge-fill {
+    @apply h-full bg-gradient-to-r from-blue-500 to-emerald-500 transition-all duration-1000;
+  }
+}
+
+@utility skeleton-pulse {
+  background-color: rgba(30, 41, 59, 0.5); /* slate-800/50 */
+  border-radius: 0.75rem;
+  position: relative;
+  overflow: hidden;
+  
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.05),
+      transparent
+    );
+    animation: shimmer 2s infinite;
+  }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }

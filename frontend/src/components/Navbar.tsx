@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Briefcase, MessageSquare, Sparkles } from 'lucide-react';
-import { motion, useScroll, useMotionValueEvent, AnimatePresence } from 'framer-motion';
+import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 
 export const Navbar = () => {
   const pathname = usePathname();
@@ -26,12 +26,12 @@ export const Navbar = () => {
     <motion.nav 
       variants={{ visible: { y: 0 }, hidden: { y: "-150%" } }}
       animate={hidden ? "hidden" : "visible"}
-      transition={{ duration: 0.3, ease: "easeInOut" }}
+      transition={{ duration: 0.3 }}
       className="nav-wrapper"
     >
       <div className="nav-container">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="nav-logo-box">JM</div>
+        <Link href="/" className="flex items-center gap-2 group">
+          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white group-hover:bg-blue-500 transition-colors">JM</div>
           <span className="font-semibold text-slate-100 hidden xs:block">Career Agent</span>
         </Link>
 
@@ -42,13 +42,12 @@ export const Navbar = () => {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`nav-link ${isActive ? 'text-white' : ''}`}
+                className={`nav-link ${isActive ? 'nav-link-active' : ''}`}
               >
-                {/* Indicador Deslizante */}
                 {isActive && (
                   <motion.div
                     layoutId="navbar-indicator"
-                    className="absolute inset-0 bg-white/10 border border-white/10 rounded-xl -z-10"
+                    className="absolute inset-0 bg-white/10 border border-white/5 rounded-xl -z-10"
                     transition={{ type: "spring", stiffness: 350, damping: 30 }}
                   />
                 )}
