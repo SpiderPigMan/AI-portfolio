@@ -1,5 +1,6 @@
 import os
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware # <--- IMPORTANTE
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
@@ -13,6 +14,20 @@ from langchain.prompts import PromptTemplate
 # 1. Cargamos el .env
 load_dotenv()
 app = FastAPI(title="Asistente Virtual RAG - Jesús Mora")
+
+# Configuración de CORS para permitir solicitudes desde el frontend
+origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"], # Permitir GET, POST, OPTIONS...
+    allow_headers=["*"], # Permitir todos los headers
+)
 
 # 2. Inicializamos los Embeddings locales (igual que en la ingesta)
 embeddings = HuggingFaceEmbeddings(model_name="paraphrase-multilingual-MiniLM-L12-v2")
@@ -188,7 +203,6 @@ match_prompt = PromptTemplate(
     input_variables=["context", "extracted_skills"]
 )
 
-# 2. Endpoint Unificado de Match (Tarea 3.1 y 3.2)
 @app.post("/match-report")
 async def get_match_report(offer: JobOffer):
     try:
@@ -214,4 +228,39 @@ async def get_match_report(offer: JobOffer):
             "analysis": report.content
         }
     except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+# 1. Modelo de datos para el chat general
+class ChatInput(BaseModel):
+    question: str
+    # history: Optional[list] = [] # Descomentar para futuro historial
+
+# 2. Configuración del LLM para Chat (Usamos el que ya importaste)
+llm_chat = ChatOpenAI(temperature=0.7, model_name="gpt-4o") # O gpt-3.5-turbo
+
+# 3. Chain de RAG General (Preguntas sobre tu CV)
+# Usamos el vector_db que ya definiste arriba
+qa_chain = RetrievalQA.from_chain_type(
+    llm=llm_chat,
+    chain_type="stuff",
+    retriever=vector_db.as_retriever(search_kwargs={"k": 3}),
+    return_source_documents=True
+)
+
+# 4. ENDPOINT DEL CHAT (El que llamará el Frontend)
+@app.post("/chat")
+async def chat_endpoint(input: ChatInput):
+    try:
+        # Si quieres probar conexión sin gastar tokens, descomenta esto:
+        # return {"answer": f"Echo: {input.question}", "source": "Mock"}
+        
+        # Lógica Real RAG:
+        response = qa_chain.invoke({"query": input.question})
+        
+        return {
+            "answer": response['result'],
+            "source": "RAG-CV" # Indicamos que viene de tu base de conocimiento
+        }
+    except Exception as e:
+        print(f"Error en chat: {e}")
         raise HTTPException(status_code=500, detail=str(e))

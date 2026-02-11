@@ -1,30 +1,23 @@
-// src/services/chatService.ts
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+export interface ChatResponse {
+  answer: string;
+  source?: string;
+}
 
-export const sendMessage = async (question: string, context?: any) => {
+export const sendMessageToAgent = async (question: string): Promise<ChatResponse> => {
   try {
-    // 1. Llamada al endpoint del Backend
-    // IMPORTANTE: Verifica si tu endpoint en Python es "/ask", "/chat" o "/api/chat"
-    const response = await fetch(`${API_URL}/ask`, { 
+    const response = await fetch(`${API_URL}/chat`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        question,
-        context, // Si tu backend espera contexto
-      }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question }),
     });
 
-    if (!response.ok) {
-      throw new Error(`Error del servidor: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    return data; // Debería devolver { answer: "...", source: "..." }
+    if (!response.ok) throw new Error('Error de conexión con el agente');
+    
+    return await response.json();
   } catch (error) {
-    console.error('Error conectando con el agente:', error);
+    console.error('Chat Service Error:', error);
     throw error;
   }
 };

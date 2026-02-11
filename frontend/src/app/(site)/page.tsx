@@ -1,3 +1,5 @@
+import ChatWidget from "@/components/ChatWidget";
+
 export default function Home() {
   return (
     <div className="relative flex flex-col items-center">
@@ -22,18 +24,20 @@ export default function Home() {
         <div className="w-full max-w-4xl group relative">
           <div className="glow-border group-hover:opacity-40"></div>
           
-          <div className="glass-card relative w-full aspect-video md:aspect-21/9 p-6 flex flex-col">
-            {/* Cabecera Mockup */}
-            <div className="flex items-center gap-2 mb-4 border-b border-white/5 pb-4">
+          {/* CAMBIO AQUÍ: Quitamos aspect-video y ponemos altura fija h-[600px] */}
+          <div className="glass-card relative w-full h-[500px] p-0 flex flex-col overflow-hidden">
+            
+            {/* Cabecera Mockup (Añadimos p-4 aquí para mantener el padding solo arriba) */}
+            <div className="flex items-center gap-2 p-4 border-b border-white/5 bg-black/20 shrink-0">
               <div className="w-3 h-3 rounded-full bg-red-500/40" />
               <div className="w-3 h-3 rounded-full bg-yellow-500/40" />
               <div className="w-3 h-3 rounded-full bg-green-500/40" />
               <span className="ml-2 text-xs text-slate-500 font-mono">session — chat.sh</span>
             </div>
             
-            {/* Contenido (Placeholder para Tarea 2) */}
-            <div className="flex-1 flex flex-col justify-end gap-4 italic text-slate-500">
-               // La lógica del chat se inyectará aquí...
+            {/* Contenedor del Widget: Debe ocupar todo el espacio restante */}
+            <div className="flex-1 relative min-h-0">
+              <ChatWidget />
             </div>
           </div>
         </div>
