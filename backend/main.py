@@ -1,266 +1,146 @@
 import os
 from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware # <--- IMPORTANTE
-from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-# Herramientas de IA (LangChain)
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_community.vectorstores import Chroma
-from langchain_openai import ChatOpenAI
-from langchain.chains import RetrievalQA
-from langchain.prompts import PromptTemplate
+# 1. Pydantic V2 (Estándar para TODO: FastAPI y LangChain)
+from pydantic import BaseModel, Field
 
-# 1. Cargamos el .env
+# 2. Imports de LangChain (LCEL Moderno)
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_chroma import Chroma
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import PromptTemplate
+from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
+from langchain_core.runnables import RunnablePassthrough
+
+# --- INICIO APP ---
 load_dotenv()
 app = FastAPI(title="Asistente Virtual RAG - Jesús Mora")
 
-# Configuración de CORS para permitir solicitudes desde el frontend
-origins = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
-
+# --- CORS ---
+origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"], # Permitir GET, POST, OPTIONS...
-    allow_headers=["*"], # Permitir todos los headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-# 2. Inicializamos los Embeddings locales (igual que en la ingesta)
+# --- IA CORE ---
+# Inicializamos embeddings y base de datos
 embeddings = HuggingFaceEmbeddings(model_name="paraphrase-multilingual-MiniLM-L12-v2")
+vector_db = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
+llm_engine = ChatOpenAI(temperature=0.7, model_name="gpt-4o")
+retriever = vector_db.as_retriever(search_kwargs={"k": 3})
 
-# 3. Cargamos la base de datos que ya creamos en la carpeta 'chroma_db'
-vector_db = Chroma(
-    persist_directory="./chroma_db", 
-    embedding_function=embeddings
-)
+# ==========================================
+#  MODULO 1: CHAT GENERAL (Versión LCEL)
+# ==========================================
 
-template = """
-IDENTIDAD:
-Eres el Agente de Carrera de Jesús Alberto Mora. Actúas como su representante digital ante reclutadores y directores técnicos.
-
-MISIÓN:
-Tu objetivo es demostrar el valor de Jesús como Desarrollador Senior y Analista, destacando su impacto en proyectos críticos (Telco, Banca, Sector Público).
-
-ESTILO DE COMUNICACIÓN:
-1. Tono ejecutivo: Directo, profesional y orientado a resultados.
-2. Proactividad: No solo respondas, aporta contexto sobre por qué ese logro es relevante.
-3. Formato: Usa listas (bullet points) para enumerar tecnologías o hitos para facilitar la lectura rápida.
-
----
-CONTEXTO DE LA EXPERIENCIA (USA SOLO ESTA INFORMACIÓN):
-{context}
----
-
-
-RESTRICCIONES CRÍTICAS:
-1. VERACIDAD: Si una habilidad, herramienta o tecnología NO aparece explícitamente en el contexto proporcionado, indica que Jesús no la tiene listada en su perfil actual, pero destaca sus habilidades transferibles más cercanas.
-2. FUENTE ÚNICA: No uses conocimientos externos sobre Jesús; básate únicamente en los documentos de la base de datos.
-3. NO INVENTAR LOGROS: Si se te pregunta por métricas, usa solo las que aparecen (ej. reducción del 60% en Orange). Si no hay datos numéricos, habla de impacto cualitativo.
-4. IDIOMA: Responde en el mismo idioma en el que se te pregunte.
-
-Pregunta del interesado: {question}
-
-Respuesta:"""
-
-PROMPT = PromptTemplate(
-    template=template, 
-    input_variables=["context", "question"]
-)
-
-# 4. Configuramos el modelo de lenguaje (OpenAI)
-llm = ChatOpenAI(model_name="gpt-4o-mini", temperature=0)
-
-# 5. Creamos la cadena de consulta (RetrievalQA)
-qa_chain = RetrievalQA.from_chain_type(
-    llm=llm,
-    chain_type="stuff",
-    retriever=vector_db.as_retriever(search_kwargs={"k": 3}),
-    chain_type_kwargs={"prompt": PROMPT}
-)
-
-
-# --- LÓGICA DE SEGURIDAD Y AHORRO ---
-
-class Question(BaseModel):
-    text: str
-
-def es_pregunta_relevante(query: str, threshold: float = 0.1): 
-    """
-    Verifica si la pregunta tiene relación semántica con tu CV.
-    threshold: 0.0 (nada parecido) a 1.0 (exacto).
-    """
-    # Buscamos los trozos más parecidos y su puntuación de relevancia
-    results = vector_db.similarity_search_with_relevance_scores(query, k=2)
-    
-    if not results:
-        return False, 0
-    
-    # Tomamos el mejor score
-    best_score = results[0][1]
-    
-    # Imprimimos en consola para tu control personal
-    print(f"DEBUG: Pregunta: {query} | Score: {best_score}")
-    
-    if best_score < threshold:
-        return False, best_score
-    
-    return True, best_score
-
-@app.post("/ask")
-async def ask_question(question: Question):
-    # PASO 1: Validar relevancia localmente (Gratis)
-    es_valida, score = es_pregunta_relevante(question.text)
-    
-    if not es_valida:
-        return {
-            "answer": "Como asistente de Jesús Mora, estoy especializado en su carrera profesional. No puedo ayudarte con temas ajenos, pero ¿te gustaría saber sobre sus proyectos en Orange o la Comunidad de Madrid?",
-            "status": "blocked_by_guardrail",
-            "relevance_score": float(score)
-        }
-
-    # PASO 2: Procesar con OpenAI (Solo si es relevante)
-    try:
-        response = qa_chain.invoke({"query": question.text})
-        return {
-            "answer": response["result"],
-            "status": "success",
-            "relevance_score": float(score)
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
-# --- NUEVAS FUNCIONALIDADES PARA ANÁLISIS DE OFERTAS DE EMPLEO ---
-# 1. Nuevo modelo de datos para la oferta
-class JobOffer(BaseModel):
-    text: str
-
-# 2. Prompt específico para extracción de Skills
-extraction_template = """
-Eres un experto en Selección de Talento IT. Tu tarea es analizar la siguiente oferta de empleo y extraer una lista estructurada de las habilidades clave requeridas.
-
-OFERTA DE EMPLEO:
-{job_text}
-
-INSTRUCCIONES:
-- Extrae únicamente Hard Skills (Lenguajes, Frameworks, Herramientas).
-- Extrae Soft Skills relevantes.
-- Devuelve la respuesta como una lista de puntos (bullet points).
-- No añadidas introducciones ni conclusiones, solo la lista.
-
-LISTA DE SKILLS:"""
-
-extraction_prompt = PromptTemplate(
-    template=extraction_template, 
-    input_variables=["job_text"]
-)
-
-# 3. Nuevo Endpoint para analizar ofertas
-@app.post("/analyze-offer")
-async def analyze_offer(offer: JobOffer):
-    try:
-        # Aquí usamos el LLM directamente para analizar el texto
-        # Creamos una cadena simple para esta tarea
-        chain = extraction_prompt | llm
-        
-        response = chain.invoke({"job_text": offer.text})
-        
-        # Devolvemos las skills extraídas
-        return {
-            "status": "success",
-            "extracted_skills": response.content
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
-### Prompt para Análisis de Compatibilidad entre CV y Oferta ##
-# 1. Definición del Prompt de Análisis de Compatibilidad 
-match_template = """
-SISTEMA: Eres un Analista de Talento Senior especializado en IT. Tu misión es evaluar la idoneidad de Jesús Mora para una vacante específica.
-
-REQUISITOS EXTRAÍDOS DE LA OFERTA:
-{extracted_skills}
-
-EVIDENCIAS ENCONTRADAS EN EL CV DE JESÚS:
-{context}
-
-TAREA: Realiza un análisis crítico y honesto comparando ambos bloques.
-
-ESTRUCTURA DEL INFORME:
-1. RESUMEN DE COMPATIBILIDAD: (Proporciona un % estimado de match técnica).
-2. PUNTOS FUERTES: (Cita proyectos específicos de Orange, Banca o Sector Público que validen las skills pedidas).
-3. ÁREAS DE MEJORA / GAPS: (Identifica qué tecnologías de la oferta NO aparecen en su CV).
-4. RECOMENDACIÓN FINAL: (Un breve párrafo sobre por qué merece una entrevista).
-
-INSTRUCCIONES: Sé preciso y no inventes experiencias. Si hay un gap, menciónalo profesionalmente.
-"""
-
-match_prompt = PromptTemplate(
-    template=match_template, 
-    input_variables=["context", "extracted_skills"]
-)
-
-@app.post("/match-report")
-async def get_match_report(offer: JobOffer):
-    try:
-        # PASO A: Extraemos las keywords de la oferta (Reusando Tarea 2)
-        extraction_chain = extraction_prompt | llm
-        skills_raw = extraction_chain.invoke({"job_text": offer.text})
-        keywords = skills_raw.content
-
-        # PASO B: Búsqueda por similitud con las keywords (Tarea 3.1)
-        # Buscamos los 4 fragmentos más relevantes de tu CV para esas keywords
-        docs = vector_db.similarity_search(keywords, k=4)
-        cv_context = "\n\n".join([f"Fragmento CV: {doc.page_content}" for doc in docs])
-
-        # PASO C: Generación del informe final (Tarea 3.2)
-        match_chain = match_prompt | llm
-        report = match_chain.invoke({
-            "context": cv_context,
-            "extracted_skills": keywords
-        })
-
-        return {
-            "status": "success",
-            "analysis": report.content
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
-# 1. Modelo de datos para el chat general
 class ChatInput(BaseModel):
     question: str
-    # history: Optional[list] = [] # Descomentar para futuro historial
 
-# 2. Configuración del LLM para Chat (Usamos el que ya importaste)
-llm_chat = ChatOpenAI(temperature=0.7, model_name="gpt-4o") # O gpt-3.5-turbo
+# Prompt del chat
+chat_template = """
+ERES: El Asistente Virtual Profesional de Jesús Mora.
+CONTEXTO RECUPERADO DEL CV:
+{context}
 
-# 3. Chain de RAG General (Preguntas sobre tu CV)
-# Usamos el vector_db que ya definiste arriba
-qa_chain = RetrievalQA.from_chain_type(
-    llm=llm_chat,
-    chain_type="stuff",
-    retriever=vector_db.as_retriever(search_kwargs={"k": 3}),
-    return_source_documents=True
+PREGUNTA: {question}
+
+INSTRUCCIONES:
+Responde de forma concisa y profesional basándote SOLO en el contexto.
+Si no tienes la respuesta en el contexto, indícalo amablemente.
+"""
+chat_prompt = PromptTemplate(template=chat_template, input_variables=["context", "question"])
+
+# Función auxiliar para formatear documentos a texto
+def format_docs(docs):
+    return "\n\n".join(doc.page_content for doc in docs)
+
+# CADENA LCEL: Retriever -> Formato -> Prompt -> LLM -> String
+qa_chain = (
+    {"context": retriever | format_docs, "question": RunnablePassthrough()}
+    | chat_prompt
+    | llm_engine
+    | StrOutputParser()
 )
 
-# 4. ENDPOINT DEL CHAT (El que llamará el Frontend)
 @app.post("/chat")
 async def chat_endpoint(input: ChatInput):
     try:
-        # Si quieres probar conexión sin gastar tokens, descomenta esto:
-        # return {"answer": f"Echo: {input.question}", "source": "Mock"}
-        
-        # Lógica Real RAG:
-        response = qa_chain.invoke({"query": input.question})
-        
-        return {
-            "answer": response['result'],
-            "source": "RAG-CV" # Indicamos que viene de tu base de conocimiento
-        }
+        # Invocamos la cadena directamente con el texto de la pregunta
+        response = qa_chain.invoke(input.question)
+        return {"answer": response, "source": "RAG-CV"}
     except Exception as e:
-        print(f"Error en chat: {e}")
+        print(f"Error chat: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# ==========================================
+#  MODULO 2: ANALIZADOR (Versión LCEL)
+# ==========================================
+
+# Modelos de Salida (Usamos Pydantic v2 directamente)
+class GapDetail(BaseModel):
+    missing_skill: str = Field(description="Habilidad faltante en el CV")
+    mitigation: str = Field(description="Estrategia para suplir la falta")
+
+class MatchAnalysis(BaseModel):
+    match_percentage: int = Field(description="Porcentaje de compatibilidad (0-100)")
+    strengths: list[str] = Field(description="Puntos fuertes coincidentes")
+    gaps: list[GapDetail] = Field(description="Lista de carencias y mitigaciones")
+    recommendation: str = Field(description="Veredicto final")
+
+# Modelo de Entrada (FastAPI)
+class JobOffer(BaseModel):
+    text: str
+
+# Parser configurado con Pydantic v2
+match_parser = JsonOutputParser(pydantic_object=MatchAnalysis)
+
+match_template = """
+ERES: Un Headhunter Senior.
+OBJETIVO: Analizar compatibilidad entre el CV de Jesús y esta oferta.
+
+CONTEXTO CV:
+{context}
+
+OFERTA:
+{job_text}
+
+INSTRUCCIONES:
+1. Detecta Strengths.
+2. Analiza Gaps y propón mitigación.
+3. Calcula % Match.
+
+FORMATO JSON:
+{format_instructions}
+"""
+
+match_prompt = PromptTemplate(
+    template=match_template,
+    input_variables=["context", "job_text"],
+    partial_variables={"format_instructions": match_parser.get_format_instructions()}
+)
+
+# Cadena Analizador
+analyze_chain = match_prompt | llm_engine | match_parser
+
+@app.post("/analyze")
+async def analyze_offer_endpoint(offer: JobOffer):
+    try:
+        # 1. Búsqueda manual de contexto relevante para la oferta
+        docs = vector_db.similarity_search(offer.text, k=4)
+        cv_context = format_docs(docs)
+        
+        # 2. Ejecución de la cadena
+        result = analyze_chain.invoke({
+            "context": cv_context,
+            "job_text": offer.text
+        })
+        return result
+    except Exception as e:
+        print(f"Error analyze: {e}")
+        raise HTTPException(status_code=500, detail="Error analizando la oferta")
