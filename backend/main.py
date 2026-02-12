@@ -79,41 +79,43 @@ async def chat_endpoint(input: ChatInput):
         raise HTTPException(status_code=500, detail=str(e))
 
 # ==========================================
-#  MODULO 2: ANALIZADOR (Versión LCEL)
+#  MODULO 2: ANALIZADOR (Versión LCEL - Enfoque Venta)
 # ==========================================
 
-# Modelos de Salida (Usamos Pydantic v2 directamente)
+# Modelos de Salida
 class GapDetail(BaseModel):
-    missing_skill: str = Field(description="Habilidad faltante en el CV")
-    mitigation: str = Field(description="Estrategia para suplir la falta")
+    missing_skill: str = Field(description="Habilidad técnica requerida que falta en el CV")
+    mitigation: str = Field(description="Argumento persuasivo para el recruiter. NO sugerir cursos. Explicar qué habilidad similar tiene en su CV que compensa esta falta (Transferable Skills). Ej: 'No tiene AWS, pero su expertis en Azure le permite adaptarse de inmediato'.")
 
 class MatchAnalysis(BaseModel):
-    match_percentage: int = Field(description="Porcentaje de compatibilidad (0-100)")
+    match_percentage: int = Field(description="Porcentaje de compatibilidad honesto (0-100)")
     strengths: list[str] = Field(description="Puntos fuertes coincidentes")
-    gaps: list[GapDetail] = Field(description="Lista de carencias y mitigaciones")
-    recommendation: str = Field(description="Veredicto final")
+    gaps: list[GapDetail] = Field(description="Lista de carencias con su argumento de defensa")
+    recommendation: str = Field(description="Veredicto final breve")
 
-# Modelo de Entrada (FastAPI)
+# Modelo de Entrada
 class JobOffer(BaseModel):
     text: str
 
-# Parser configurado con Pydantic v2
 match_parser = JsonOutputParser(pydantic_object=MatchAnalysis)
 
 match_template = """
-ERES: Un Headhunter Senior.
-OBJETIVO: Analizar compatibilidad entre el CV de Jesús y esta oferta.
+ERES: Un Coach de Carrera Experto en Tecnología.
+OBJETIVO: Preparar a Jesús Mora para una entrevista, armándolo con argumentos para defender su candidatura frente a esta oferta.
 
-CONTEXTO CV:
+CONTEXTO DEL CANDIDATO (CV):
 {context}
 
-OFERTA:
+OFERTA DE EMPLEO:
 {job_text}
 
-INSTRUCCIONES:
-1. Detecta Strengths.
-2. Analiza Gaps y propón mitigación.
-3. Calcula % Match.
+INSTRUCCIONES DE ANÁLISIS ESTRATÉGICO:
+1. **Strengths:** Detecta coincidencias exactas clave.
+2. **Gaps & Defensa (CRÍTICO):**
+   - Si falta una tecnología, NO digas "debe aprenderla".
+   - GENERA UN ARGUMENTO DE VENTA: Busca en el contexto una tecnología equivalente o un principio base que Jesús ya domine.
+   - EJEMPLO: Si piden "Angular" y él sabe "React", la mitigación debe ser: "Su dominio avanzado de React y gestión de estado le permitirá transicionar a Angular rápidamente."
+   - Si la carencia es total y no hay defensa posible, sé honesto: "Requiere formación específica".
 
 FORMATO JSON:
 {format_instructions}
@@ -131,11 +133,11 @@ analyze_chain = match_prompt | llm_engine | match_parser
 @app.post("/analyze")
 async def analyze_offer_endpoint(offer: JobOffer):
     try:
-        # 1. Búsqueda manual de contexto relevante para la oferta
+        # Búsqueda de contexto
         docs = vector_db.similarity_search(offer.text, k=4)
         cv_context = format_docs(docs)
         
-        # 2. Ejecución de la cadena
+        # Ejecución
         result = analyze_chain.invoke({
             "context": cv_context,
             "job_text": offer.text

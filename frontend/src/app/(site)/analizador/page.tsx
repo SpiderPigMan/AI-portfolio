@@ -12,6 +12,7 @@ export default function AnalizadorPage() {
   const handleAnalyze = async () => {
     if (!input.trim() || isLoading) return;
     setIsLoading(true);
+    setResult(null);
     try {
       const data = await analyzeJobOffer(input);
       setResult(data);
@@ -119,8 +120,8 @@ export default function AnalizadorPage() {
                   <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Fortalezas Detectadas</h4>
                   {result.strengths.map((item, i) => (
                     <div key={i} className="analysis-card-item">
-                      <div className="flex items-center gap-3">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                      <div className="flex items-start gap-3">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                         <span className="text-sm text-slate-300">{item}</span>
                       </div>
                     </div>
@@ -129,7 +130,7 @@ export default function AnalizadorPage() {
 
                 {/* Gaps y Mitigación */}
                 <div className="space-y-3">
-                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Gaps & Estrategia</h4>
+                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Gaps & Aporte</h4>
                   {result.gaps.map((gap, i) => (
                     <div key={i} className="analysis-card-item">
                       <div className="flex items-start gap-3">
@@ -137,7 +138,7 @@ export default function AnalizadorPage() {
                         <div className="flex flex-col">
                           <span className="text-sm font-semibold text-slate-200">{gap.missing_skill}</span>
                           <div className="mitigation-box">
-                            <span className="font-bold mr-1">Estrategia:</span> {gap.mitigation}
+                            <span className="font-bold mr-1">Aporte:</span> {gap.mitigation}
                           </div>
                         </div>
                       </div>

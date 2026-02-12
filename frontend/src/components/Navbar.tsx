@@ -30,9 +30,22 @@ export const Navbar = () => {
       className="nav-wrapper"
     >
       <div className="nav-container">
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white group-hover:bg-blue-500 transition-colors">JM</div>
-          <span className="font-semibold text-slate-100 hidden xs:block">Career Agent</span>
+        <Link href="/" className="flex items-center gap-3 group cursor-pointer">
+          <div className="nav-brand-badge">
+            <div className="nav-brand-inner">
+              <span className="font-bold text-white">JM</span>
+            </div>
+            <div className="nav-status-dot"></div>
+          </div>
+
+          <div className="flex flex-col">
+            <span className="nav-brand-name">
+              Jesús Mora
+            </span>
+            <span className="nav-brand-subtitle">
+              Interactive Profile
+            </span>
+          </div>
         </Link>
 
         <div className="flex items-center gap-1 sm:gap-2">
