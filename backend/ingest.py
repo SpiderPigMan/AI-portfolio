@@ -23,7 +23,7 @@ def create_vector_db():
     print(f"✅ Documentos encontrados: {len(docs)}")
 
     # 3. Fragmentación (Chunking)
-    text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
+    text_splitter = CharacterTextSplitter(chunk_size=4000, chunk_overlap=500)
     chunks = text_splitter.split_documents(docs)
     print(f"✅ Texto dividido en {len(chunks)} fragmentos.")
 

@@ -1,6 +1,7 @@
 # Caso de Éxito: Gestión de Activos Inmobiliarios Bancarios
 **Rol:** Junior Software Developer (Prácticas y Primer Empleo)
 **Tecnologías:** ASP Classic, SQL, Gestión de Bases de Datos Relacionales.
+**Principios:** DRY (Don't Repeat Yourself), KISS (Keep It Simple, Stupid), SOLID.
 **Contexto:** Aplicación interna para entidades bancarias (B2B).
 
 ## 📌 El Reto: Gestión de Información Confidencial
@@ -24,3 +25,6 @@ Este proyecto demuestra los cimientos de mi carrera:
 - Capacidad para trabajar con **información crítica y confidencial**.
 - Sólida base en **resolución de problemas y depuración de errores**.
 - Experiencia temprana en entornos de **alta responsabilidad** (Sector Banca).
+
+## Contexto para la IA (Metadata)
+> Este documento es relevante para consultas sobre: Fundamentos del desarrollo web, ASP Classic, mantenimiento de software, depuración y principios de programación (SOLID, DRY).

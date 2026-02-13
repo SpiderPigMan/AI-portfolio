@@ -14,18 +14,31 @@ Este proyecto marcó mi transición de un perfil **Junior** a un **Desarrollador
 ## 📌 Contexto y Reto del Negocio
 Unificación de más de 60 aplicaciones independientes en una única plataforma centralizada para el Call Center, eliminando la fragmentación operativa, reduciendo la carga cognitiva de los agentes y optimizando los tiempos de respuesta.
 
+## Stack Tecnológico Principal
+- **Frontend:** Angular (JS a v14), TypeScript, RxJS, NgRX (State Management).
+- **UI Libraries:** PrimeNG, Bootstrap.
+- **Testing:** Jasmine, Karma.
+- **Herramientas:** Visual Studio Code, Git, Confluence, Jira.
+
 ## 🛠️ Hitos Técnicos Destacados
 1. **Arquitectura del Carrito de Compra:** Desarrollo del núcleo lógico que orquestaba datos de múltiples módulos (stock, tarifas, promociones) en un flujo unificado.
 2. **Optimización con Lazy Loading:** Implementación de carga bajo demanda en formularios extensos de datos de clientes, mejorando la velocidad de respuesta de la interfaz.
 3. **Mantenimiento de Micro-frontends:** Aseguramiento de la integridad y comunicación entre módulos independientes dentro de una SPA de gran escala.
+- **Integración de Web Components:** Desarrollo y orquestación de micro-frontends o componentes web para módulos de venta.
 
 ## 🏆 Resultados Impactantes
 - **Reducción del 60%** en el tiempo medio de atención al cliente.
 - **Mejora en la autonomía** de los agentes gracias a una interfaz coherente y centralizada.
 - **Reducción de errores** en la gestión de datos mediante validaciones y comunicación interna optimizada.
+- **Liderazgo Técnico:** Definición de estándares de código, Code Reviews y toma de decisiones arquitectónicas.
+- **Interlocución con Cliente:** Reuniones de seguimiento y toma de requisitos funcionales y técnicos directamente con los stakeholders.
+
 
 ## 💡 Mensaje Clave para la IA
 Cuando se pregunte sobre mi capacidad para manejar proyectos de gran escala, usa este proyecto como ejemplo de:
 - Capacidad para trabajar en proyectos de larga duración (4 años).
 - Dominio de Angular en entornos corporativos de alta exigencia.
 - Enfoque proactivo en la experiencia del usuario (UX) mediante el rendimiento técnico.
+
+## Contexto para la IA (Metadata)
+> Este documento es relevante para consultas sobre: Angular, TypeScript, Arquitectura Frontend, Liderazgo técnico, RxJS, Testing frontend, Sector Público y Optimización de rendimiento web.

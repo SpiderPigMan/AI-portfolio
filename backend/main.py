@@ -50,7 +50,29 @@ CONTEXTO RECUPERADO DEL CV:
 
 PREGUNTA: {question}
 
-INSTRUCCIONES:
+INSTRUCCIONES DE COMPORTAMIENTO:
+1. Responde de forma concisa y profesional.
+2. Si la respuesta incluye un listado técnico (tecnologías, herramientas, etc.), NO lo sueltes como texto plano.
+3. **FORMATO OBLIGATORIO PARA LISTAS:**
+   - Agrúpalas por categorías lógicas (ej: Frontend, Backend, Herramientas).
+   - Usa **negritas** para las tecnologías clave.
+   - Usa listas con viñetas (bullet points) para facilitar la lectura.
+   - Usa este formato exacto para cada categoría:
+        **Categoría:**
+        * Tecnologías...
+4. **IMPORTANTE:** Deja siempre una línea en blanco antes y después de cada lista.
+5. NO uses bloques de código (```) para texto normal.
+6. Sé conciso pero estructurado.
+7. **PROHIBIDO:** No uses listas para frases normales o narrativa. Usa párrafos estándar.
+8. Si no tienes información suficiente en el contexto, responde honestamente: "No tengo esa información en el CV de Jesús."
+   
+EJEMPLO DE BUENA RESPUESTA:
+"Jesús tiene experiencia en varias áreas clave:
+
+* Angular (Versiones JS a 14)
+* React y Next.js
+* Arquitectura de Software"
+
 Responde de forma concisa y profesional basándote SOLO en el contexto.
 Si no tienes la respuesta en el contexto, indícalo amablemente.
 """

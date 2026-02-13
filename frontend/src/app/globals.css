@@ -303,6 +303,45 @@
            bg-gradient-to-r from-blue-400 to-emerald-400 
            uppercase tracking-widest mt-1;
   }
+
+  /* === ESTILOS EN EL CHAT === */
+  
+  .chat-markdown {
+    @apply text-sm text-slate-200 leading-7 w-full;
+  }
+
+  /* Párrafos: SIN FLECHAS, solo texto limpio */
+  .chat-markdown p {
+    @apply mb-3 last:mb-0 block relative pl-0; /* pl-0 asegura que no tenga sangría extra */
+  }
+
+  /* Negritas Tech */
+  .chat-markdown strong {
+    @apply font-mono font-semibold text-cyan-300 bg-cyan-950/40 
+           border border-cyan-500/20 px-1.5 py-0.5 rounded-md mx-0.5 text-[0.9em];
+  }
+
+  /* Títulos */
+  .chat-markdown h3, .chat-markdown h4 {
+    @apply font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 
+           mt-5 mb-2 text-xs uppercase tracking-[0.2em] border-b border-white/10 pb-2;
+  }
+
+  /* Listas: Solo aquí aplicaremos la decoración */
+  .chat-markdown ul {
+    @apply my-2 flex flex-col gap-1;
+  }
+
+  /* Item de lista */
+  .chat-markdown li {
+    @apply relative pl-5 text-slate-300/90; /* pl-5 deja espacio para el icono */
+  }
+
+  /* EL INDICADOR: Usamos un chevron '›' más sutil y elegante */
+  .chat-markdown li::before {
+    content: "›";  /* O usa "▪" si prefieres un cuadrado */
+    @apply absolute left-0 top-0 text-emerald-400 font-bold text-lg leading-6;
+  }
 }
 
 @utility skeleton-pulse {

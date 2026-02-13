@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { sendMessageToAgent } from '@/services/chatService';
-import { useChat } from '@/context/ChatContext'; // <--- Usamos el hook global
+import { useChat } from '@/context/ChatContext';
+import ReactMarkdown from 'react-markdown';
 
 export default function ChatWidget() {
   const [input, setInput] = useState('');
@@ -61,8 +62,12 @@ export default function ChatWidget() {
             key={i} 
             className={`chat-row ${m.role === 'user' ? 'chat-row-user' : 'chat-row-bot'}`}
           >
-            <div className={`chat-bubble ${m.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-bot'}`}>
-              {m.content}
+            <div className={`chat-bubble ${m.role === 'user' ? 'chat-bubble-user' : 'bg-[#0F172A]/80 backdrop-blur-md border border-white/10 rounded-2xl rounded-tl-sm chat-markdown shadow-lg ring-1 ring-white/5 text-left'}`}>
+              {m.role === 'user' ? (
+                m.content
+              ) : (
+                <ReactMarkdown>{m.content}</ReactMarkdown>
+              )}
             </div>
           </div>
         ))}
