@@ -11,9 +11,9 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
-from langchain_huggingface import HuggingFaceEmbeddings
+# from langchain_huggingface import HuggingFaceEmbeddings -- No se usa en esta versión por falta de RAM en el servidor, se opta por OpenAIEmbeddings
 from langchain_chroma import Chroma
-from langchain_openai import ChatOpenAI
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
@@ -30,7 +30,7 @@ app = FastAPI(title="Asistente Virtual RAG - Jesús Mora")
 # --- CORS ---
 production_url = os.getenv("FRONTEND_URL")
 
-origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
+origins = ["http://localhost:3000", "http://127.0.0.1:3000", os.getenv("FRONTEND_URL")]
 
 if production_url:
     origins.append(production_url)
@@ -50,7 +50,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 db_path = os.path.join(BASE_DIR, "chroma_db")
 
 # Inicializamos embeddings y base de datos
-embeddings = HuggingFaceEmbeddings(model_name="paraphrase-multilingual-MiniLM-L12-v2")
+embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
 vector_db = Chroma(persist_directory=db_path, embedding_function=embeddings)
 llm_engine = ChatOpenAI(temperature=0.7, model_name="gpt-4o")
 retriever = vector_db.as_retriever(search_kwargs={"k": 3})
@@ -109,6 +109,14 @@ qa_chain = (
     | llm_engine
     | StrOutputParser()
 )
+
+@app.get("/")
+async def root():
+    return {
+        "status": "online",
+        "message": "AI Portfolio Backend API",
+        "version": "1.0.0"
+    }
 
 @app.post("/chat")
 async def chat_endpoint(input: ChatInput):

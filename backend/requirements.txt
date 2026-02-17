@@ -10,7 +10,7 @@ langchain-openai==0.2.0
 langchain-text-splitters==0.3.0
 chromadb==0.5.15
 httpx==0.27.2
-langchain-huggingface==0.1.0
-sentence-transformers==3.0.1
+# langchain-huggingface==0.1.0 -- No se usa en esta versión por falta de RAM en el servidor, se opta por OpenAIEmbeddings
+# sentence-transformers==3.0.1 -- No se usa en esta versión por falta de RAM en el servidor, se opta por OpenAIEmbeddings
 python-multipart==0.0.17
 pysqlite3-binary==0.5.4.post2
