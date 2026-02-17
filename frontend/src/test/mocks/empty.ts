@@ -2,4 +2,5 @@
 // Exportaciones dummy para satisfacer a cualquier importador
 export const parse = () => ({});
 export const format = () => "";
-export default () => ({});
+const emptyMock = () => {};
+export default emptyMock;

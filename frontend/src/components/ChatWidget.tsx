@@ -39,8 +39,8 @@ export default function ChatWidget() {
       
       // 3. Añadir respuesta al estado global
       addMessage('assistant', response.answer);
-    } catch (error) {
-      addMessage('system', '⚠️ Error de conexión. Inténtalo más tarde.');
+    } catch (_error) {
+      addMessage('system', '⚠️ Error de conexión. Inténtalo más tarde. ' + _error);
     } finally {
       setIsLoading(false);
     }

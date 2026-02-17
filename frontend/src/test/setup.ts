@@ -1,8 +1,8 @@
 import '@testing-library/jest-dom';
+import React from 'react'; // Importación necesaria para evitar el uso de require
 import { vi } from 'vitest';
 
 // Bloqueamos la carga de las librerías de CSS-Color que fallan en Windows
-// Al hacer esto, Vitest ni siquiera intentará leer los archivos .mjs conflictivos
 vi.mock('@asamazakjp/css-color', () => ({
   default: () => ({}),
   parse: () => ({})
@@ -12,16 +12,16 @@ vi.mock('@csstools/css-calc', () => ({
   default: () => ({})
 }));
 
-// Mock global para Framer Motion para evitar parpadeos en los tests de Experiencia
+// Mock global para Framer Motion optimizado para el build
 vi.mock('framer-motion', async () => {
   const actual = await vi.importActual('framer-motion');
   return {
     ...actual,
-    AnimatePresence: ({ children }: any) => children,
+    AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
     motion: {
-      div: (props: any) => require('react').createElement('div', props),
-      article: (props: any) => require('react').createElement('article', props),
-      h3: (props: any) => require('react').createElement('h3', props),
+      div: (props: Record<string, unknown>) => React.createElement('div', props),
+      article: (props: Record<string, unknown>) => React.createElement('article', props),
+      h3: (props: Record<string, unknown>) => React.createElement('h3', props),
     },
   };
 });

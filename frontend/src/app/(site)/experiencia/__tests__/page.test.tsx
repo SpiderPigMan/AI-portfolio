@@ -10,9 +10,12 @@ vi.mock('framer-motion', async () => {
     ...actual,
     AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
     motion: {
-      div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-      article: ({ children, ...props }: any) => <article {...props}>{children}</article>,
-      h3: ({ children, ...props }: any) => <h3 {...props}>{children}</h3>,
+      div: ({ children, ...props }: { children?: React.ReactNode } & Record<string, unknown>) => 
+        <div {...props}>{children}</div>,
+      article: ({ children, ...props }: { children?: React.ReactNode } & Record<string, unknown>) => 
+        <article {...props}>{children}</article>,
+      h3: ({ children, ...props }: { children?: React.ReactNode } & Record<string, unknown>) => 
+        <h3 {...props}>{children}</h3>,
     },
   };
 });
@@ -53,11 +56,8 @@ describe('ExperienciaPage - Bento Grid', () => {
       expect(screen.getByText(/Logros Clave/i)).toBeInTheDocument();
     });
     
-    // Cerramos
-    // Buscamos el botón de cierre (X) que suele ser el único botón en el modal
-    const closeButtons = screen.getAllByRole('button');
     // El último botón suele ser el del modal si está superpuesto, o buscamos por clase si fuera necesario
-    const closeButton = closeButtons[0]; 
+    const closeButton = screen.getByRole('button', { name: /close|cerrar/i });
     
     fireEvent.click(closeButton);
 

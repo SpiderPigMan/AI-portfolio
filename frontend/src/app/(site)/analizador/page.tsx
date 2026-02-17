@@ -111,7 +111,7 @@ export default function AnalizadorPage() {
                 {/* Veredicto IA */}
                 <div className="p-4 bg-blue-500/5 border border-blue-500/20 rounded-2xl">
                   <p className="text-sm text-blue-200 italic leading-relaxed">
-                    "{result.recommendation}"
+                    &quot;{result.recommendation}&quot;
                   </p>
                 </div>
 
