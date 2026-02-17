@@ -1,4 +1,12 @@
 import os
+import sys
+# Parche para usar pysqlite3 en lugar del sqlite3 antiguo del sistema
+try:
+    __import__('pysqlite3')
+    sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+except ImportError:
+    pass
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
