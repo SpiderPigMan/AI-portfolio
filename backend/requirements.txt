@@ -13,4 +13,4 @@ httpx==0.27.2
 langchain-huggingface==0.1.0
 sentence-transformers==3.0.1
 python-multipart==0.0.17
-pysqlite3-binary==0.5.4
+pysqlite3-binary==0.5.4.post2

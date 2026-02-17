@@ -10,11 +10,7 @@ except ImportError:
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-
-# 1. Pydantic V2 (Estándar para TODO: FastAPI y LangChain)
 from pydantic import BaseModel, Field
-
-# 2. Imports de LangChain (LCEL Moderno)
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
 from langchain_openai import ChatOpenAI
@@ -24,10 +20,23 @@ from langchain_core.runnables import RunnablePassthrough
 
 # --- INICIO APP ---
 load_dotenv()
+
+# Validación de seguridad para el despliegue
+if not os.getenv("OPENAI_API_KEY"):
+    print("⚠️ ADVERTENCIA: OPENAI_API_KEY no encontrada en las variables de entorno.")
+
 app = FastAPI(title="Asistente Virtual RAG - Jesús Mora")
 
 # --- CORS ---
+production_url = os.getenv("FRONTEND_URL")
+
 origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
+
+if production_url:
+    origins.append(production_url)
+    clean_url = production_url.replace("https://", "").replace("http://", "")
+    origins.append(f"https://{clean_url}")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -37,9 +46,12 @@ app.add_middleware(
 )
 
 # --- IA CORE ---
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+db_path = os.path.join(BASE_DIR, "chroma_db")
+
 # Inicializamos embeddings y base de datos
 embeddings = HuggingFaceEmbeddings(model_name="paraphrase-multilingual-MiniLM-L12-v2")
-vector_db = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
+vector_db = Chroma(persist_directory=db_path, embedding_function=embeddings)
 llm_engine = ChatOpenAI(temperature=0.7, model_name="gpt-4o")
 retriever = vector_db.as_retriever(search_kwargs={"k": 3})
 
@@ -176,3 +188,10 @@ async def analyze_offer_endpoint(offer: JobOffer):
     except Exception as e:
         print(f"Error analyze: {e}")
         raise HTTPException(status_code=500, detail="Error analizando la oferta")
+    
+# --- ARRANQUE SEGURO ---
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.environ.get("PORT", 8000))
+    print(f"🚀 Servidor arrancando en el puerto {port}...")
+    uvicorn.run(app, host="0.0.0.0", port=port)
