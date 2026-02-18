@@ -7,25 +7,26 @@ import ReactMarkdown from 'react-markdown';
 import Link from 'next/link';
 import { Send, Linkedin, UserCircle, FileText, ArrowRight, AlertTriangle } from 'lucide-react';
 
-// --- COMPONENTE TARJETA LINKEDIN (Visual) ---
+/* --- COMPONENTES VISUALES (Tarjetas) --- */
+
 const LinkedInCard = () => (
-  <div className="mt-4 p-4 bg-blue-950/20 border border-blue-500/30 rounded-xl animate-in fade-in slide-in-from-bottom-2">
+  <div className="feedback-card feedback-card-blue">
     <div className="flex items-start gap-3">
-      <div className="p-2 bg-blue-500/10 rounded-full shrink-0">
+      <div className="feedback-icon-wrapper icon-blue">
         <UserCircle className="w-5 h-5 text-blue-400" />
       </div>
       <div className="flex-1">
-        <h4 className="text-xs font-bold text-blue-300 uppercase tracking-wider mb-1">
+        <h4 className="feedback-title text-blue-glow">
           Contacto Directo
         </h4>
-        <p className="text-sm text-slate-300 mb-3 leading-relaxed">
+        <p className="feedback-text">
           Ese dato es sensible o muy específico. Lo mejor es que lo hables directamente con Jesús.
         </p>
         <a 
           href="https://linkedin.com/in/jesús-alberto-mora-san-andrés-5b0398112" 
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-[#0a66c2] hover:bg-[#004182] text-white text-xs font-bold rounded-lg transition-all hover:translate-x-1"
+          className="feedback-btn btn-linkedin"
         >
           <Linkedin className="w-4 h-4" />
           Conectar en LinkedIn
@@ -35,23 +36,22 @@ const LinkedInCard = () => (
   </div>
 );
 
-// --- COMPONENTE TARJETA ANALIZADOR (Visual) ---
 const AnalyzerActionCard = () => (
-  <div className="mt-2 p-4 bg-emerald-950/20 border border-emerald-500/30 rounded-xl animate-in fade-in slide-in-from-bottom-2">
+  <div className="feedback-card feedback-card-emerald">
     <div className="flex items-start gap-3">
-      <div className="p-2 bg-emerald-500/10 rounded-full shrink-0">
+      <div className="feedback-icon-wrapper icon-emerald">
         <FileText className="w-5 h-5 text-emerald-400" />
       </div>
       <div className="flex-1">
-        <h4 className="text-xs font-bold text-emerald-300 uppercase tracking-wider mb-1">
+        <h4 className="feedback-title text-emerald-glow">
           ¡Oferta Detectada!
         </h4>
-        <p className="text-sm text-slate-300 mb-3 leading-relaxed">
+        <p className="feedback-text">
           Para darte un feedback profesional sobre esta vacante, es mejor usar mi herramienta de análisis dedicada.
         </p>
         <Link 
           href="/analizador"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-all hover:translate-x-1"
+          className="feedback-btn btn-emerald"
         >
           Ir al Analizador <ArrowRight className="w-4 h-4" />
         </Link>
@@ -60,23 +60,22 @@ const AnalyzerActionCard = () => (
   </div>
 );
 
-// --- COMPONENTE TARJETA DE AVISO DE LINKS (Visual) ---
 const LinkLimitCard = () => (
-  <div className="mt-2 p-4 bg-amber-950/20 border border-amber-500/30 rounded-xl animate-in fade-in slide-in-from-bottom-2">
+  <div className="feedback-card feedback-card-amber">
     <div className="flex items-start gap-3">
-      <div className="p-2 bg-amber-500/10 rounded-full shrink-0">
+      <div className="feedback-icon-wrapper icon-amber">
         <AlertTriangle className="w-5 h-5 text-amber-400" />
       </div>
       <div className="flex-1">
-        <h4 className="text-xs font-bold text-amber-300 uppercase tracking-wider mb-1">
+        <h4 className="feedback-title text-amber-glow">
           Enlace Externo Detectado
         </h4>
-        <p className="text-sm text-slate-300 mb-3 leading-relaxed">
-          Por seguridad, no tengo acceso a internet. Si esto es una oferta de empleo, usa mi herramienta especializada.
+        <p className="feedback-text">
+          Por seguridad, no tengo acceso a internet. Si quieres que analice una oferta, por favor <strong>utiliza la herramienta de análisis dedicada</strong>.
         </p>
         <Link 
           href="/analizador" 
-          className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg transition-all hover:translate-x-1"
+          className="feedback-btn btn-amber"
         >
           Ir al Analizador <ArrowRight className="w-4 h-4" />
         </Link>
@@ -89,6 +88,9 @@ export default function ChatWidget() {
   const [input, setInput] = useState('');
   const { messages, addMessage, isLoading, setIsLoading } = useChat();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // REF PARA CONTROLAR EL FOCO Y LA ALTURA
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -98,38 +100,48 @@ export default function ChatWidget() {
     scrollToBottom();
   }, [messages]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Cada vez que isLoading cambia a false (la IA termina), devolvemos el foco
+  useEffect(() => {
+    if (!isLoading) {
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 50);
+    }
+  }, [isLoading]);
+
+  const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
     const userText = input;
     setInput('');
     
+    // Resetear altura del textarea tras enviar
+    if (inputRef.current) {
+      inputRef.current.style.height = 'auto';
+    }
+
     addMessage('user', userText);
 
+    // --- INTERCEPTORES ---
     if (isJobOffer(userText)) {
       setIsLoading(true);
-      
       setTimeout(() => {
         addMessage('assistant', 'He detectado una descripción de puesto. [OFFER_DETECTED]');
         setIsLoading(false);
       }, 600);
-      
-      return;
+      return; 
     }
 
     if (containsLink(userText)) {
       setIsLoading(true);
       setTimeout(() => {
-        // Usamos Markdown para las negritas
-        addMessage('assistant', '⚠️ **No puedo leer enlaces externos.**\n\nPor seguridad y privacidad, no tengo acceso a internet para navegar. \n\nSi quieres que analice una oferta, por favor **utiliza la herramienta de análisis dedicada**. [LINK_DETECTED]');
+        addMessage('assistant', '⚠️ **No puedo leer enlaces externos.**\n\nPor seguridad y privacidad, no tengo acceso a internet para navegar. \n\nSi quieres que analice una oferta, por favor **utiliza la herramienta de análisis dedicada**. [LINK_DETECTED]'); 
         setIsLoading(false);
       }, 500);
       return;
     }
 
     setIsLoading(true);
-
     try {
       const response = await sendMessageToAgent(userText);
       addMessage('assistant', response.answer);
@@ -140,9 +152,22 @@ export default function ChatWidget() {
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value);
+    // Ajuste dinámico de altura
+    e.target.style.height = 'auto';
+    e.target.style.height = `${e.target.scrollHeight}px`;
+  };
+
   return (
     <div className="chat-container">
-      {/* Área de Mensajes */}
       <div className="chat-scroll-area">
         {messages.length === 0 && (
           <p className="chat-empty-state">
@@ -161,7 +186,6 @@ export default function ChatWidget() {
             .replace('[OFFER_DETECTED]', '')
             .replace('[LINK_DETECTED]', '')
             .trim();
-
 
           return (
             <div 
@@ -188,14 +212,18 @@ export default function ChatWidget() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
-      <form onSubmit={handleSubmit} className="chat-input-area">
-        <input
-          type="text"
+      <form 
+        onSubmit={(e) => { e.preventDefault(); handleSend(); }} 
+        className="chat-input-area"
+      >
+        <textarea
+          ref={inputRef}
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
           placeholder="Ej: ¿Tienes experiencia en Java?"
-          className="chat-input-field"
+          rows={1}
+          className="chat-input-field resize-none overflow-hidden min-h-[48px] max-h-[150px]"
           disabled={isLoading}
         />
         <button 
