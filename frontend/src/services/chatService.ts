@@ -53,3 +53,28 @@ export const analyzeJobOffer = async (jobText: string): Promise<AnalysisResult> 
     throw error;
   }
 };
+
+export const isJobOffer = (text: string): boolean => {
+  // 1. Longitud mínima para evitar falsos positivos en preguntas cortas
+  if (text.length < 150) return false;
+
+  // 2. Palabras clave típicas de una Descripción de Trabajo (JD)
+  const keywords = [
+    'requisitos', 'experiencia', 'sueldo', 'salario', 'vacante', 
+    'beneficios', 'híbrido', 'remoto', 'responsabilidades', 
+    'nice to have', 'imprescindible', 'stack', 'tecnologías',
+    'job description', 'skills', 'hiring'
+  ];
+
+  // 3. Contamos coincidencias (case-insensitive)
+  const lowerText = text.toLowerCase();
+  const matches = keywords.filter(word => lowerText.includes(word));
+  
+  // Si tiene al menos 2 palabras clave y la longitud adecuada, es una oferta
+  return matches.length >= 2;
+};
+
+export const containsLink = (text: string): boolean => {
+  const urlRegex = /(https?:\/\/[^\s]+)|(www\.[^\s]+)/gi;
+  return urlRegex.test(text);
+};
