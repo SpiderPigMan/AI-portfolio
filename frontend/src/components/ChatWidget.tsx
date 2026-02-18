@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { sendMessageToAgent } from '@/services/chatService';
 import { useChat } from '@/context/ChatContext';
 import ReactMarkdown from 'react-markdown';
+import { Send } from 'lucide-react';
 
 export default function ChatWidget() {
   const [input, setInput] = useState('');
@@ -89,9 +90,14 @@ export default function ChatWidget() {
         <button 
           type="submit" 
           disabled={isLoading || !input.trim()}
-          className="chat-send-btn"
+          className="chat-send-btn group" // Añadimos 'group' para animaciones opcionales
+          aria-label="Enviar mensaje"
         >
-          Enviar
+          {/* Icono siempre visible, un poco más grande en móvil */}
+          <Send className="w-5 h-5 md:w-4 md:h-4 transition-transform group-hover:scale-110" />
+
+          {/* Texto: OCULTO en móvil (hidden), VISIBLE en escritorio (md:inline) */}
+          <span className="hidden md:inline font-medium">Enviar</span>
         </button>
       </form>
     </div>

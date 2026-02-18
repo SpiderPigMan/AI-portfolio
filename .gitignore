@@ -11,4 +11,4 @@ frontend/dist/
 
 # IA
 .DS_Store
-.backend/chroma_db/
+backend/chroma_db/
