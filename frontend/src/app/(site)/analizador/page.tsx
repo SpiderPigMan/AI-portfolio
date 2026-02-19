@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { 
-  Sparkles, Target, Zap, FileText, AlertCircle, 
+  Sparkles, Target, Zap, AlertCircle, 
   Loader2, CheckCircle2, Trash2 
 } from 'lucide-react';
 import { analyzeJobOffer, AnalysisResult, validateAnalyzerInput } from '@/services/chatService';
