@@ -91,14 +91,16 @@ export default function ExperienciaPage() {
   const selectedExp = EXPERIENCE.find((e) => e.id === selectedId);
 
   return (
-    <div className="max-w-5xl mx-auto px-4 pb-20 pt-10">
-      
-      {/* Título de la Sección */}
-      <div className="mb-12">
-        <h1 className="text-4xl font-bold text-white mb-4 tracking-tight">
-          Trayectoria <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">Profesional</span>
+    <div className="view-container">
+      <header className="view-header">
+        <h1 className="view-title">
+          Trayectoria <span className="text-gradient-ai">Profesional</span>
         </h1>
-      </div>
+        <p className="view-description">
+          Un recorrido por mi evolución técnica: desde el desarrollo Full Stack 
+          hasta la arquitectura de soluciones impulsadas por IA.
+        </p>
+      </header>
 
       {/* Grid de Tarjetas */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

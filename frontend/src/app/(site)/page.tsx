@@ -3,19 +3,19 @@ import ChatWidget from '@/components/ChatWidget';
 export default function Home() {
   return (
     <div className="relative flex flex-col items-center">
-      <section className="w-full py-16 flex flex-col items-center text-center">
+      <section className="w-full pt-4 pb-12 flex flex-col items-center text-center">
         
         {/* Usamos tu clase badge-ai de globals.css */}
-        <div className="badge-ai mb-6">
+        <div className="badge-ai mb-4">
           Powered by RAG & GPT-4o
         </div>
 
-        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6">
+        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-4">
           Jesús Mora <br />
           <span className="text-gradient-ai">AI Career Agent</span>
         </h1>
 
-        <p className="text-slate-400 text-lg max-w-2xl leading-relaxed mb-12">
+        <p className="text-slate-400 text-lg max-w-2xl leading-relaxed mb-6">
           Explora mi trayectoria a través de un asistente inteligente. 
           Pregunta sobre mis proyectos, stack tecnológico y experiencia.
         </p>

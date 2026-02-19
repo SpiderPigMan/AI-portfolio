@@ -42,14 +42,14 @@ export default function AnalizadorPage() {
   };
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-700">
-      <header className="max-w-3xl">
-        <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl mb-4">
+    <div className="view-container">
+      <header className="view-header">
+        <h1 className="view-title">
           AI <span className="text-gradient-ai">Offer Analyzer</span>
         </h1>
-        <p className="text-slate-400 text-lg leading-relaxed">
-          Introduce la descripción de una vacante para diagnosticar la compatibilidad 
-          técnica con mi perfil y detectar estrategias de adaptación.
+        <p className="view-description">
+          Diagnostica la compatibilidad técnica con mi perfil y detecta 
+          estrategias de adaptación para cualquier oferta de empleo.
         </p>
       </header>
 

@@ -143,6 +143,44 @@
   }
 
   /* =========================================
+   ESTRUCTURA DE PÁGINA ESTÁNDAR
+   ========================================= */
+
+  /* Contenedor principal para todas las vistas (Analizador, Experiencia, etc.) */
+  .view-container {
+  @apply space-y-10 pt-6 md:pt-10;
+  
+    animation: view-fade-in 0.7s ease-out forwards;
+  }
+
+  /* Definición de los fotogramas de la animación */
+  @keyframes view-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Encabezado de página */
+  .view-header {
+    @apply max-w-4xl mb-10;
+  }
+
+  /* Título H1 estandarizado */
+  .view-title {
+    @apply text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl mb-3;
+  }
+
+  /* Descripción de página */
+  .view-description {
+    @apply text-slate-400 text-lg leading-relaxed max-w-2xl;
+  }
+
+  /* =========================================
      ESTILOS DEL WIDGET DE CHAT
      ========================================= */
 

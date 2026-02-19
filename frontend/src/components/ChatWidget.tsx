@@ -88,26 +88,35 @@ export default function ChatWidget() {
   const [input, setInput] = useState('');
   const { messages, addMessage, isLoading, setIsLoading } = useChat();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isFirstRender = useRef(true);
   
   // REF PARA CONTROLAR EL FOCO Y LA ALTURA
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  if (isFirstRender.current) {
+    isFirstRender.current = false;
+    return;
+  }
+
+  messagesEndRef.current?.scrollIntoView({ 
+    behavior: 'smooth',
+    block: 'nearest'
+  });
+};
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, isLoading]);
 
   // Cada vez que isLoading cambia a false (la IA termina), devolvemos el foco
   useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading && messages.length > 0) {
       setTimeout(() => {
         inputRef.current?.focus();
       }, 50);
     }
-  }, [isLoading]);
+  }, [isLoading, messages.length]);
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
