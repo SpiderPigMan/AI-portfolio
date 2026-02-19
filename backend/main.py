@@ -172,24 +172,35 @@ class JobOffer(BaseModel):
 match_parser = JsonOutputParser(pydantic_object=MatchAnalysis)
 
 match_template = """
-ERES: Un Coach de Carrera Experto en Tecnología.
-OBJETIVO: Preparar a Jesús Mora para una entrevista, armándolo con argumentos para defender su candidatura frente a esta oferta.
+ERES: Un Senior Tech Recruiter y Coach de Carrera con ojo crítico y honesto.
+OBJETIVO: Realizar un diagnóstico implacable de compatibilidad entre el perfil de Jesús Mora y una oferta de empleo.
 
 CONTEXTO DEL CANDIDATO (CV):
 {context}
 
-OFERTA DE EMPLEO:
+OFERTA DE EMPLEO A ANALIZAR:
 {job_text}
 
-INSTRUCCIONES DE ANÁLISIS ESTRATÉGICO:
-1. **Strengths:** Detecta coincidencias exactas clave.
-2. **Gaps & Defensa (CRÍTICO):**
-   - Si falta una tecnología, NO digas "debe aprenderla".
-   - GENERA UN ARGUMENTO DE VENTA: Busca en el contexto una tecnología equivalente o un principio base que Jesús ya domine.
-   - EJEMPLO: Si piden "Angular" y él sabe "React", la mitigación debe ser: "Su dominio avanzado de React y gestión de estado le permitirá transicionar a Angular rápidamente."
-   - Si la carencia es total y no hay defensa posible, sé honesto: "Requiere formación específica".
+=== INSTRUCCIONES DE CALIBRACIÓN DEL PORCENTAJE (CRÍTICO) ===
+Actúa como un reclutador real. Sé justo con los puntos.
+1. **FILTRO DE SECTOR (STOP):** Si la oferta NO es del sector tecnológico (ej: hostelería, medicina, leyes, ventas al detalle) o no tiene relación con el desarrollo de software/IT, el `match_percentage` debe ser AUTOMÁTICAMENTE entre 0% y 5%.
+2. **PENALIZACIÓN POR STACK:** Si la oferta pide un lenguaje de programación principal que Jesús NO domina (ej: Ruby, PHP, Rust) y no hay una base equivalente fuerte, resta 40 puntos.
+3. **PUNTUACIÓN POR ROLES:**
+   - 85-100%: Match casi perfecto. Domina el stack core y tiene la experiencia requerida.
+   - 60-84%: Perfil interesante. Tiene las bases pero faltan herramientas secundarias.
+   - 30-59%: Perfil "trasplantable". Gran brecha técnica pero con habilidades transferibles.
+   - 0-29%: Perfil no apto o sector no relacionado.
 
-FORMATO JSON:
+=== INSTRUCCIONES DE ANÁLISIS ESTRATÉGICO ===
+1. **Strengths:** Detecta coincidencias exactas y tangibles.
+2. **Gaps & Defensa (PERSUASIÓN):**
+   - Para tecnologías faltantes en el CV: NO sugieras estudiar.
+   - Busca una **Habilidad Puente**: Identifica una tecnología que Jesús sí domine y que comparta principios arquitectónicos con la solicitada.
+   - Ejemplo: Si piden "Vue", usa su dominio de "React/Angular" para argumentar una curva de aprendizaje mínima de días.
+   - Si piden "Bases de Datos SQL específicas" y él tiene "PostgreSQL", resalta su dominio del estándar SQL.
+3. **Veredicto:** Sé breve, directo y profesional.
+
+FORMATO DE SALIDA (JSON ESTRICTO):
 {format_instructions}
 """
 
