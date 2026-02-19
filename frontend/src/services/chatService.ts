@@ -78,3 +78,49 @@ export const containsLink = (text: string): boolean => {
   const urlRegex = /(https?:\/\/[^\s]+)|(www\.[^\s]+)/gi;
   return urlRegex.test(text);
 };
+
+export interface ValidationResult {
+  isValid: boolean;
+  errorMessage: string | null;
+}
+
+export const validateAnalyzerInput = (text: string): ValidationResult => {
+  const trimmedText = text.trim();
+
+  if (!trimmedText) {
+    return { isValid: false, errorMessage: 'Por favor, introduce la descripción de una oferta.' };
+  }
+
+  const urlRegex = /(https?:\/\/[^\s]+)|(www\.[^\s]+)/gi;
+  if (urlRegex.test(trimmedText)) {
+    return { 
+      isValid: false, 
+      errorMessage: '⚠️ He detectado un enlace. Por favor, copia y pega el texto de la descripción de la oferta, no incluyas el link directo.' 
+    };
+  }
+
+  if (trimmedText.length < 200) {
+    return { 
+      isValid: false, 
+      errorMessage: '⚠️ El texto es demasiado corto. Pega la descripción completa (requisitos, responsabilidades) para un análisis preciso.' 
+    };
+  }
+
+  const techHRKeywords = [
+    'requisitos', 'experiencia', 'stack', 'tecnologías', 'desarrollador', 
+    'developer', 'frontend', 'backend', 'fullstack', 'salario', 'remoto', 
+    'proyecto', 'conocimientos', 'años', 'years', 'skills', 'oferta', 'puesto'
+  ];
+  
+  const lowerText = trimmedText.toLowerCase();
+  const keywordMatches = techHRKeywords.filter(kw => lowerText.includes(kw));
+
+  if (keywordMatches.length < 2) {
+    return { 
+      isValid: false, 
+      errorMessage: '⚠️ El texto no parece una oferta tecnológica válida. Asegúrate de incluir la sección de requisitos o tecnologías.' 
+    };
+  }
+
+  return { isValid: true, errorMessage: null };
+};

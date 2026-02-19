@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import * as chatService from '../chatService';
 
-// 1. MOCK GLOBAL DE FETCH SIN USAR 'ANY'
-// Usamos el tipo Mock de vitest para mantener el tipado estricto
+// 1. MOCK GLOBAL DE FETCH
 const fetchMock = vi.fn() as Mock;
 vi.stubGlobal('fetch', fetchMock);
 
@@ -17,7 +16,6 @@ describe('chatService - Comunicación con la API', () => {
       source: 'RAG-CV' 
     };
     
-    // Configuramos el mock para una respuesta exitosa
     fetchMock.mockResolvedValue({
       ok: true,
       json: () => Promise.resolve(mockResponse),
@@ -55,7 +53,6 @@ describe('chatService - Comunicación con la API', () => {
   });
 
   it('debe lanzar un error cuando la API responde con fallo', async () => {
-    // Simulamos un error 500 del servidor
     fetchMock.mockResolvedValue({
       ok: false,
       status: 500,
@@ -64,5 +61,47 @@ describe('chatService - Comunicación con la API', () => {
 
     await expect(chatService.sendMessageToAgent('test'))
       .rejects.toThrow('Error de conexión con el agente');
+  });
+});
+
+describe('chatService - Validaciones del Analizador', () => {
+  it('debe rechazar un texto vacío', () => {
+    const result = chatService.validateAnalyzerInput('   ');
+    expect(result.isValid).toBe(false);
+    expect(result.errorMessage).toContain('Por favor, introduce');
+  });
+
+  it('debe rechazar texto que contenga enlaces (URLs)', () => {
+    const textWithLink = 'Buscamos desarrollador. Más info en www.linkedin.com/jobs';
+    const result = chatService.validateAnalyzerInput(textWithLink);
+    expect(result.isValid).toBe(false);
+    expect(result.errorMessage).toContain('detectado un enlace');
+  });
+
+  it('debe rechazar textos demasiado cortos', () => {
+    const shortText = 'Busco programador Java con 3 años de experiencia.';
+    const result = chatService.validateAnalyzerInput(shortText);
+    expect(result.isValid).toBe(false);
+    expect(result.errorMessage).toContain('demasiado corto');
+  });
+
+  it('debe rechazar textos que no contengan palabras clave tecnológicas o de RRHH', () => {
+    const randomText = 'Me gusta mucho ir a la montaña a caminar y luego comer una buena paella con mis amigos un domingo de sol.'.repeat(3);
+    const result = chatService.validateAnalyzerInput(randomText);
+    expect(result.isValid).toBe(false);
+    expect(result.errorMessage).toContain('no parece una oferta tecnológica');
+  });
+
+  it('debe aceptar una descripción de oferta válida', () => {
+    const validJD = `
+      Estamos contratando un Desarrollador Senior Fullstack.
+      Requisitos:
+      - Al menos 5 años de experiencia con React y Node.js.
+      - Conocimientos en AWS y Docker.
+      Ofrecemos salario competitivo y trabajo remoto.
+    `;
+    const result = chatService.validateAnalyzerInput(validJD);
+    expect(result.isValid).toBe(true);
+    expect(result.errorMessage).toBeNull();
   });
 });

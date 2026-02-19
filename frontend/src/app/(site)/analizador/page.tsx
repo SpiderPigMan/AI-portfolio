@@ -1,18 +1,36 @@
 "use client";
 
 import { useState } from 'react';
-import { Sparkles, Target, Zap, FileText, AlertCircle, Loader2, CheckCircle2 } from 'lucide-react';
-import { analyzeJobOffer, AnalysisResult } from '@/services/chatService';
+import { 
+  Sparkles, Target, Zap, FileText, AlertCircle, 
+  Loader2, CheckCircle2, Trash2 
+} from 'lucide-react';
+import { analyzeJobOffer, AnalysisResult, validateAnalyzerInput } from '@/services/chatService';
 
 export default function AnalizadorPage() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  const handleClear = () => {
+    setInput("");
+    setValidationError(null);
+    setResult(null);
+  };
 
   const handleAnalyze = async () => {
-    if (!input.trim() || isLoading) return;
+    const validation = validateAnalyzerInput(input);
+    
+    if (!validation.isValid) {
+      setValidationError(validation.errorMessage);
+      return;
+    }
+
+    setValidationError(null);
     setIsLoading(true);
     setResult(null);
+    
     try {
       const data = await analyzeJobOffer(input);
       setResult(data);
@@ -35,113 +53,138 @@ export default function AnalizadorPage() {
         </p>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         {/* Lado Izquierdo: Entrada de Datos */}
-        <section className="glass-card p-8 flex flex-col gap-6 ring-1 ring-white/10 hover:ring-blue-500/30 transition-all">
-          <div className="flex items-center gap-2 pb-4 border-b border-white/5">
-            <FileText className="w-5 h-5 text-blue-400" />
-            <h2 className="font-semibold text-slate-200 uppercase tracking-wider text-sm">Descripción de la Vacante</h2>
-          </div>
-
-          <div className="flex-1 min-h-[300px]">
+        <section className="space-y-6">
+          <div className="analyzer-input-wrapper">
             <textarea
               value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Pega aquí el texto de la oferta de trabajo..."
-              className="ai-textarea"
+              onChange={(e) => {
+                setInput(e.target.value);
+                if (validationError) setValidationError(null);
+              }}
+              placeholder="Pega aquí los requisitos, tecnologías y responsabilidades de la oferta de trabajo..."
+              className={`analyzer-textarea ${validationError ? 'analyzer-textarea-error' : ''}`}
               disabled={isLoading}
             />
+            
+            {/* Botón de Borrado */}
+            {input && !isLoading && (
+              <button
+                onClick={handleClear}
+                className="analyzer-clear-btn"
+                title="Limpiar descripción"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
           </div>
 
-          <button 
+          {/* Aviso de Error de Validación */}
+          {validationError && (
+            <div className="feedback-card feedback-card-amber flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+              <p className="text-sm text-amber-200/90 leading-relaxed">
+                {validationError}
+              </p>
+            </div>
+          )}
+
+          <button
             onClick={handleAnalyze}
             disabled={isLoading || !input.trim()}
-            className="w-full py-4 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-900/20"
+            className="w-full py-4 px-6 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:grayscale transition-all font-bold text-white flex items-center justify-center gap-3 shadow-lg shadow-blue-900/20"
           >
             {isLoading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Analizando Perfil...
+              </>
             ) : (
-              <Zap className="w-5 h-5" />
+              <>
+                <Sparkles className="w-5 h-5" />
+                Ejecutar Diagnóstico IA
+              </>
             )}
-            {isLoading ? "Analizando Perfil..." : "Ejecutar Diagnóstico"}
           </button>
         </section>
 
         {/* Lado Derecho: Reporte de Compatibilidad */}
-        <section className="glass-card p-8 flex flex-col gap-8 ring-1 ring-white/10">
-          <div className="flex items-center gap-2 pb-4 border-b border-white/5">
-            <Target className="w-5 h-5 text-emerald-400" />
-            <h2 className="font-semibold text-slate-200 uppercase tracking-wider text-sm">Reporte de Compatibilidad</h2>
-          </div>
-
-          {/* Métrica Principal (Match Score) */}
-          <div className="space-y-3">
-            <div className="flex justify-between items-end">
-              <span className="text-sm text-slate-400 font-medium">Match Score</span>
-              <span className={`text-2xl font-bold ${result ? 'text-emerald-400' : 'text-slate-600'}`}>
-                {result ? `${result.match_percentage}%` : '0%'}
-              </span>
-            </div>
-            <div className="match-gauge">
-              <div 
-                className="match-gauge-fill" 
-                style={{ width: `${result ? result.match_percentage : 0}%` }} 
-              />
-            </div>
-          </div>
-
-          <div className="results-panel overflow-y-auto max-h-[400px] pr-2">
+        <section className="h-full">
+          <div className={`glass-card p-8 h-full min-h-[400px] flex flex-col ${!result && !isLoading ? 'justify-center items-center border-dashed' : ''}`}>
             {!result && !isLoading && (
-              <div className="flex flex-col items-center justify-center h-full text-center py-10 opacity-40">
-                <Sparkles className="w-12 h-12 mb-4" />
-                <p className="text-sm">Inicia el análisis para ver el reporte detallado</p>
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-slate-800/50 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/5">
+                  <Target className="w-8 h-8 text-slate-500" />
+                </div>
+                <p className="text-slate-500 font-medium">Esperando datos de la vacante...</p>
+                <p className="text-slate-600 text-sm max-w-[250px] mx-auto">
+                  El análisis detallado de fortalezas y gaps aparecerá aquí.
+                </p>
               </div>
             )}
 
             {isLoading && (
-              <div className="space-y-4">
-                <div className="skeleton-pulse h-20 w-full" />
-                <div className="skeleton-pulse h-20 w-full" />
-                <div className="skeleton-pulse h-20 w-full" />
+              <div className="space-y-8 w-full">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
+                    <Zap className="w-8 h-8 text-blue-400 animate-pulse" />
+                  </div>
+                  <div className="space-y-2 flex-1">
+                    <div className="h-4 bg-slate-800 rounded-full w-1/2 animate-pulse" />
+                    <div className="h-3 bg-slate-800 rounded-full w-3/4 animate-pulse" />
+                  </div>
+                </div>
+                <div className="space-y-4 pt-4">
+                  <div className="h-20 skeleton-pulse" />
+                  <div className="h-20 skeleton-pulse" />
+                </div>
               </div>
             )}
 
-            {result && (
-              <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
-                {/* Veredicto IA */}
-                <div className="p-4 bg-blue-500/5 border border-blue-500/20 rounded-2xl">
-                  <p className="text-sm text-blue-200 italic leading-relaxed">
-                    &quot;{result.recommendation}&quot;
-                  </p>
+            {result && !isLoading && (
+              <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+                <div className="flex items-center gap-6">
+                  <div className="relative flex items-center justify-center">
+                    <svg className="w-20 h-20 transform -rotate-90">
+                      <circle cx="40" cy="40" r="36" stroke="currentColor" strokeWidth="4" fill="transparent" className="text-slate-800" />
+                      <circle cx="40" cy="40" r="36" stroke="currentColor" strokeWidth="4" fill="transparent" 
+                        strokeDasharray={226}
+                        strokeDashoffset={226 - (226 * result.match_percentage) / 100}
+                        className="text-blue-500 transition-all duration-1000 ease-out" 
+                      />
+                    </svg>
+                    <span className="absolute text-xl font-bold">{result.match_percentage}%</span>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-white">Compatibilidad</h3>
+                    <p className="text-slate-400 text-sm">{result.recommendation}</p>
+                  </div>
                 </div>
 
-                {/* Fortalezas */}
                 <div className="space-y-3">
-                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Fortalezas Detectadas</h4>
+                  <h4 className="text-xs font-bold text-emerald-500 uppercase tracking-widest flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4" /> Fortalezas Clave
+                  </h4>
                   {result.strengths.map((item, i) => (
-                    <div key={i} className="analysis-card-item">
-                      <div className="flex items-start gap-3">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                        <span className="text-sm text-slate-300">{item}</span>
-                      </div>
+                    <div key={i} className="bg-emerald-500/5 border border-emerald-500/10 p-3 rounded-xl flex items-start gap-3">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5" />
+                      <span className="text-sm text-slate-300">{item}</span>
                     </div>
                   ))}
                 </div>
 
                 {/* Gaps y Mitigación */}
                 <div className="space-y-3">
-                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Gaps & Aporte</h4>
+                  <h4 className="text-xs font-bold text-amber-500 uppercase tracking-widest flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4" /> Gaps Detectados & Mitigación
+                  </h4>
                   {result.gaps.map((gap, i) => (
-                    <div key={i} className="analysis-card-item">
-                      <div className="flex items-start gap-3">
-                        <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5" />
-                        <div className="flex flex-col">
-                          <span className="text-sm font-semibold text-slate-200">{gap.missing_skill}</span>
-                          <div className="mitigation-box">
-                            <span className="font-bold mr-1">Aporte:</span> {gap.mitigation}
-                          </div>
-                        </div>
-                      </div>
+                    <div key={i} className="bg-amber-500/5 border border-amber-500/10 p-4 rounded-xl space-y-2">
+                      <span className="text-sm font-bold text-slate-200 block">Falta: {gap.missing_skill}</span>
+                      <p className="text-xs text-slate-400 italic leading-relaxed">
+                        <span className="text-amber-500/80 font-semibold not-italic">Defensa:</span> {gap.mitigation}
+                      </p>
                     </div>
                   ))}
                 </div>
